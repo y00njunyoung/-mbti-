@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>당신의 독서MBTI는?</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --red: #c83927;
+    --red-dark: #a82e1f;
+    --red-light: rgba(200, 57, 39, 0.1);
+    --gold: #e6c71f;
+    --gold-dark: #c4a918;
+    --gold-light: rgba(230, 199, 31, 0.15);
+  }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #1a1a1a;
+    background-image: url('배경.png');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+  }
+
+  #app {
+    background: rgba(255, 252, 242, 0.93);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    width: 100%;
+    max-width: 560px;
+    box-shadow: 0 4px 32px rgba(0,0,0,0.15);
+    text-align: center;
+    border-top: 4px solid var(--gold);
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* 시작 화면 */
+  .intro-logo {
+    width: 100%;
+    max-width: 320px;
+    height: auto;
+    margin: 0 auto 1.5rem;
+    display: block;
+     /* 투명 배경 PNG 검은 배경 제거 */
+  }
+  .intro-sub {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.7;
+    margin-bottom: 1.75rem;
+  }
+  .intro-meta {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--gold-light);
+    border-radius: 12px;
+    border: 1px solid rgba(230,199,31,0.3);
+  }
+  .meta-item { font-size: 13px; color: #888; }
+  .meta-item span { display: block; font-size: 15px; font-weight: 700; color: #1a1a1a; margin-top: 2px; }
+
+  /* 진행 바 */
+  .progress-wrap { margin-bottom: 2rem; }
+  .progress-bar {
+    height: 6px;
+    background: #e8e0d0;
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--red), var(--gold));
+    border-radius: 3px;
+    transition: width 0.4s ease;
+  }
+  .progress-text { font-size: 12px; color: #aaa; }
+
+  /* 축 배지 */
+  .axis-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+    background: var(--gold-light);
+    color: #8a7210;
+    border: 1px solid rgba(230,199,31,0.4);
+  }
+
+  .q-text {
+    font-size: 18px;
+    font-weight: 500;
+    color: #1a1a1a;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  /* 5점 척도 */
+  .scale-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 0.75rem;
+  }
+  .scale-btn {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    border: 2px solid #d8cfc7;
+    background: #fff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #aaa;
+    transition: all 0.15s ease;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .scale-btn:hover {
+    border-color: var(--red);
+    color: var(--red);
+    background: var(--red-light);
+  }
+  .scale-btn.selected {
+    background: var(--red);
+    border-color: var(--red);
+    color: #fff;
+    transform: scale(1.1);
+    box-shadow: 0 2px 8px rgba(200,57,39,0.3);
+  }
+  .scale-desc {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: #bbb;
+    padding: 0 4px;
+  }
+
+  /* 장르 선택 */
+  .genre-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 0.5rem;
+  }
+  .genre-btn {
+    padding: 1.25rem 1rem;
+    border-radius: 14px;
+    border: 2px solid #e0d8d0;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+    font-family: 'Noto Sans KR', sans-serif;
+  }
+  .genre-btn:hover {
+    border-color: var(--gold);
+    background: var(--gold-light);
+  }
+  .genre-btn.selected {
+    border-color: var(--gold-dark);
+    background: var(--gold-light);
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(230,199,31,0.25);
+  }
+  .genre-btn .icon { font-size: 28px; margin-bottom: 8px; }
+  .genre-btn .name { font-size: 15px; font-weight: 700; color: #1a1a1a; }
+  .genre-btn .desc { font-size: 12px; color: #888; margin-top: 4px; }
+
+  /* 버튼 */
+  .btn-start {
+    width: 100%;
+    padding: 1rem;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.15s;
+    box-shadow: 0 3px 10px rgba(200,57,39,0.25);
+  }
+  .btn-start:hover { background: var(--red-dark); }
+
+  .nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    gap: 10px;
+  }
+  .btn-prev {
+    padding: 0.75rem 1.5rem;
+    background: #f0ebe4;
+    color: #888;
+    border: none;
+    border-radius: 10px;
+    font-size: 14px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.15s;
+  }
+  .btn-prev:hover { background: #e5ddd5; }
+  .btn-next {
+    flex: 1;
+    padding: 0.75rem 2rem;
+    background: var(--red);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: background 0.15s, opacity 0.15s;
+    box-shadow: 0 2px 8px rgba(200,57,39,0.2);
+  }
+  .btn-next:hover:not(:disabled) { background: var(--red-dark); }
+  .btn-next:disabled { opacity: 0.3; cursor: default; box-shadow: none; }
+
+  /* 결과 */
+  .result-emoji { font-size: 48px; margin-bottom: 1rem; }
+  .result-type {
+    font-size: 13px;
+    color: var(--red);
+    font-weight: 500;
+    background: var(--red-light);
+    display: inline-block;
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 1rem;
+  }
+  .result-name {
+    font-size: 24px;
+    font-weight: 700;
+    color: #1a1a1a;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+  }
+  .result-divider {
+    width: 40px;
+    height: 3px;
+    background: var(--gold);
+    border-radius: 2px;
+    margin: 0.75rem auto 1.25rem;
+  }
+  .result-desc {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.8;
+    margin-bottom: 1.5rem;
+  }
+  .result-tags {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin-bottom: 2rem;
+  }
+  .tag {
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+  }
+  .tag.red   { background: var(--red-light); color: var(--red); }
+  .tag.gold  { background: var(--gold-light); color: #8a7210; }
+  .tag.brown { background: #f0e8df; color: #7a4f38; }
+  .tag.dark  { background: #ede8e3; color: #5a4a40; }
+
+  .btn-retry {
+    width: 100%;
+    padding: 0.875rem;
+    border: 2px solid var(--gold);
+    background: #fff;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    color: #8a7210;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.15s;
+  }
+  .btn-retry:hover {
+    background: var(--gold-light);
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="intro" class="screen active">
+    <img class="intro-logo" src="로고.png" alt="당신의 독서MBTI는?">
+    <div class="intro-sub">10개의 질문으로 나의 독서 취향을 알아보세요.<br>독서 모임에서 더 잘 맞는 책을 찾는 데 도움이 됩니다.</div>
+    <div class="intro-meta">
+      <div class="meta-item">소요 시간 <span>약 3분</span></div>
+      <div class="meta-item">문항 수 <span>10문항</span></div>
+      <div class="meta-item">유형 수 <span>32가지</span></div>
+    </div>
+    <button class="btn-start" onclick="startQuiz()">시작하기 →</button>
+  </div>
+
+  <div id="quiz" class="screen">
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+      <div class="progress-text" id="progress-text"></div>
+    </div>
+    <div id="question-area"></div>
+    <div class="nav">
+      <button class="btn-prev" id="btn-prev" onclick="prevQ()">← 이전</button>
+      <button class="btn-next" id="btn-next" onclick="nextQ()" disabled>다음 →</button>
+    </div>
+  </div>
+
+  <div id="result" class="screen">
+    <div class="result-emoji">🎉</div>
+    <div class="result-type" id="res-type"></div>
+    <div class="result-name" id="res-name"></div>
+    <div class="result-divider"></div>
+    <div class="result-tags" id="res-tags"></div>
+    <div class="result-desc" id="res-desc"></div>
+    <button class="btn-retry" onclick="retry()">↩ 다시 해보기</button>
+  </div>
+
+</div>
+
+<script>
+const AXES = [
+  { id: 'solo', label: '1축 · 혼자 vs 함께' },
+  { id: 'emo',  label: '2축 · 감성 vs 이성' },
+  { id: 'len',  label: '3축 · 단편 vs 장편' },
+];
+
+const QUESTIONS = [
+  { axis: 'solo', aDir: true,  text: '독서는 조용히 혼자 즐길 때 가장 만족스럽다.' },
+  { axis: 'solo', aDir: false, text: '책 속 장면이나 문장을 다른 사람과 나누고 싶을 때가 많다.' },
+  { axis: 'emo',  aDir: true,  text: '책을 읽으며 감정이 북받치거나 눈물이 난 적이 있다.' },
+  { axis: 'emo',  aDir: false, text: '책을 고를 때 논리적 구성이나 정보의 깊이를 중요하게 본다.' },
+  { axis: 'emo',  aDir: false, text: '읽고 나서 오래 기억에 남는 건 문장의 감동보다 배운 내용이다.' },
+  { axis: 'emo',  aDir: true,  text: '주인공의 감정에 깊이 몰입하는 편이다.' },
+  { axis: 'len',  aDir: true,  text: '단숨에 읽히는 짧은 글이 긴 소설보다 좋다.' },
+  { axis: 'len',  aDir: false, text: '400페이지쯤은 돼야 제대로 된 독서를 한 기분이 든다.' },
+  { axis: 'len',  aDir: true,  text: '얇은 책을 들고 다니며 틈틈이 읽는 걸 좋아한다.' },
+  { axis: 'genre', text: '지금 이 순간, 가장 끌리는 장르는?', type: 'genre' },
+];
+
+const GENRE_OPTIONS = [
+  { id: '추리',   icon: '🔍', name: '추리',   desc: '단서를 따라가는 긴장감' },
+  { id: '로맨스', icon: '💕', name: '로맨스', desc: '설레고 따뜻한 이야기' },
+  { id: 'SF',     icon: '🚀', name: 'SF',     desc: '낯선 세계와 상상력' },
+  { id: '기타',   icon: '📖', name: '기타',   desc: '위 셋 다 아닌 나만의 취향' },
+];
+
+const RESULTS = {
+  '혼자-감성-단편': { name: '고요한 감성 수집가',        desc: '혼자만의 시간에 짧고 깊은 문장을 음미하는 독자예요. 감정의 밀도가 높은 짧은 소설이나 에세이가 잘 맞아요.' },
+  '혼자-감성-장편': { name: '몰입형 감정 여행자',        desc: '혼자 긴 이야기 속으로 완전히 빠져드는 타입이에요. 세계관이 풍부한 장편 소설이나 연작 시리즈를 좋아할 거예요.' },
+  '혼자-이성-단편': { name: '효율적인 지식 탐험가',      desc: '혼자 짧고 알찬 글을 통해 지식을 쌓는 독자예요. 잘 정리된 에세이나 짧은 논픽션이 딱 맞아요.' },
+  '혼자-이성-장편': { name: '깊이 파는 독립 연구자',     desc: '혼자 두껍고 내용 있는 책을 끝까지 파고드는 타입이에요. 전문서적이나 긴 논픽션에서 만족감을 얻어요.' },
+  '함께-감성-단편': { name: '감동을 나누는 이야기꾼',    desc: '짧고 감동적인 이야기를 읽고 주변 사람과 감정을 나누고 싶어 하는 독자예요. 독서 모임에 딱 맞는 타입이에요!' },
+  '함께-감성-장편': { name: '공감대를 여는 소통가',      desc: '긴 이야기를 함께 읽고 깊은 감정을 나누는 걸 좋아해요. 장편 소설로 독서 모임을 이끄는 데 탁월해요.' },
+  '함께-이성-단편': { name: '빠른 토론을 즐기는 분석가', desc: '짧은 글을 빠르게 읽고 바로 생각을 나누고 싶은 타입이에요. 짧은 에세이나 아티클로 토론하면 에너지가 넘쳐요.' },
+  '함께-이성-장편': { name: '스터디형 책 클럽 리더',     desc: '긴 책을 체계적으로 읽고 함께 분석하는 걸 즐겨요. 두꺼운 논픽션이나 고전으로 깊은 독서 모임을 이끌 수 있어요.' },
+};
+
+const TAG_COLORS = {
+  '혼자':'brown', '함께':'gold',
+  '감성':'red',   '이성':'dark',
+  '단편':'gold',  '장편':'brown',
+  '추리':'dark',  '로맨스':'red', 'SF':'gold', '기타':'brown'
+};
+
+let current = 0;
+let answers = {};
+
+function startQuiz() {
+  document.getElementById('intro').classList.remove('active');
+  document.getElementById('quiz').classList.add('active');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = QUESTIONS[current];
+  const total = QUESTIONS.length;
+  document.getElementById('progress').style.width = Math.round((current / total) * 100) + '%';
+  document.getElementById('progress-text').textContent = current + ' / ' + total + ' 완료';
+  document.getElementById('btn-prev').style.visibility = current === 0 ? 'hidden' : 'visible';
+  document.getElementById('btn-next').textContent = current === total - 1 ? '결과 보기 →' : '다음 →';
+
+  let html = '';
+  if (q.type === 'genre') {
+    html = '<div class="q-text">' + q.text + '</div><div class="genre-grid">';
+    GENRE_OPTIONS.forEach(g => {
+      const sel = answers['genre'] === g.id ? 'selected' : '';
+      html += '<button class="genre-btn ' + sel + '" onclick="selectGenre(\'' + g.id + '\')">'
+            + '<div class="icon">' + g.icon + '</div>'
+            + '<div class="name">' + g.name + '</div>'
+            + '<div class="desc">' + g.desc + '</div></button>';
+    });
+    html += '</div>';
+  } else {
+    const axis = AXES.find(a => a.id === q.axis);
+    const saved = answers[current];
+    html = '<div class="axis-badge">' + axis.label + '</div>'
+         + '<div class="q-text">' + q.text + '</div>'
+         + '<div class="scale-buttons">';
+    [1,2,3,4,5].forEach(v => {
+      html += '<button class="scale-btn ' + (saved === v ? 'selected' : '') + '" onclick="selectScale(' + v + ')">' + v + '</button>';
+    });
+    html += '</div><div class="scale-desc"><span>매우 그렇다</span><span>전혀 아니다</span></div>';
+  }
+  document.getElementById('question-area').innerHTML = html;
+  updateNext();
+}
+
+function selectScale(v) {
+  answers[current] = v;
+  document.querySelectorAll('.scale-btn').forEach((btn, i) => btn.classList.toggle('selected', i + 1 === v));
+  updateNext();
+}
+
+function selectGenre(id) {
+  answers['genre'] = id;
+  document.querySelectorAll('.genre-btn').forEach(btn => btn.classList.toggle('selected', btn.querySelector('.name').textContent === id));
+  updateNext();
+}
+
+function updateNext() {
+  const q = QUESTIONS[current];
+  const has = q.type === 'genre' ? !!answers['genre'] : answers[current] !== undefined;
+  document.getElementById('btn-next').disabled = !has;
+}
+
+function nextQ() {
+  if (current < QUESTIONS.length - 1) { current++; renderQuestion(); }
+  else showResult();
+}
+
+function prevQ() {
+  if (current > 0) { current--; renderQuestion(); }
+}
+
+function calcResult() {
+  const scores = { solo: 0, emo: 0, len: 0 };
+  const counts = { solo: 0, emo: 0, len: 0 };
+  QUESTIONS.forEach((q, i) => {
+    if (q.type === 'genre') return;
+    const val = answers[i];
+    if (val === undefined) return;
+    const score = q.aDir ? (6 - val) : val;
+    scores[q.axis] += score;
+    counts[q.axis]++;
+  });
+  return {
+    solo:  scores.solo / counts.solo  >= 3 ? '혼자' : '함께',
+    emo:   scores.emo  / counts.emo   >= 3 ? '감성' : '이성',
+    len:   scores.len  / counts.len   >= 3 ? '단편' : '장편',
+    genre: answers['genre'] || '기타'
+  };
+}
+
+function showResult() {
+  document.getElementById('quiz').classList.remove('active');
+  document.getElementById('result').classList.add('active');
+  const { solo, emo, len, genre } = calcResult();
+  const res = RESULTS[solo + '-' + emo + '-' + len] || { name: '나만의 독서 취향', desc: '독특하고 개성 있는 독자예요!' };
+  document.getElementById('res-type').textContent = solo + ' · ' + emo + ' · ' + len + ' · ' + genre;
+  document.getElementById('res-name').textContent = res.name;
+  document.getElementById('res-desc').textContent = res.desc;
+  document.getElementById('res-tags').innerHTML = [solo, emo, len, genre]
+    .map(t => '<span class="tag ' + (TAG_COLORS[t] || 'brown') + '">' + t + '</span>').join('');
+}
+
+function retry() {
+  current = 0; answers = {};
+  document.getElementById('result').classList.remove('active');
+  document.getElementById('intro').classList.add('active');
+}
+</script>
+</body>
+</html>
